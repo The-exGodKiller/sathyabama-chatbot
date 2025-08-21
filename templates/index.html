@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sathyabama Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .bg-slideshow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-slideshow img {
+      position: absolute;
+      width: 110%;
+      height: 110%;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.1) translateX(-30px);
+      animation: fadeMotion 24s infinite;
+      filter: blur(2px);
+    }
+
+    .bg-slideshow img:nth-child(1) { animation-delay: 0s; }
+    .bg-slideshow img:nth-child(2) { animation-delay: 6s; }
+    .bg-slideshow img:nth-child(3) { animation-delay: 12s; }
+    .bg-slideshow img:nth-child(4) { animation-delay: 18s; }
+    .bg-slideshow img:nth-child(5) { animation-delay: 24s; }
+    .bg-slideshow img:nth-child(6) { animation-delay: 30s; }
+    .bg-slideshow img:nth-child(7) { animation-delay: 36s; }
+
+    @keyframes fadeMotion {
+      0%   { opacity: 0; transform: scale(1.1) translateX(-40px); }
+      8%   { opacity: 1; transform: scale(1.05) translateX(0px); }
+      33%  { opacity: 1; transform: scale(1.0) translateX(20px); filter: blur(0px); }
+      41%  { opacity: 0; transform: scale(1.08) translateX(40px); filter: blur(2px); }
+      100% { opacity: 0; }
+    }
+
+    #chatbox {
+      position: relative;
+      width: 680px;
+      max-width: 95%;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 20px;
+      padding-top: 60px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    #bot-icon {
+      position: absolute;
+      top: -40px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: white;
+      padding: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+      animation: bounce 3s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    #bot-icon img {
+      width: 100%;
+      height: auto;
+      border-radius: 50%;
+    }
+
+    #messages {
+      width: 100%;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      padding-right: 8px;
+      box-sizing: border-box;
+    }
+
+    .msg {
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 10px;
+      word-wrap: break-word;
+      white-space: normal;
+      max-width: 80%;
+    }
+
+    /* USER message on right */
+    .user {
+      margin-left: auto;
+      background: #e3e8ff;
+      border-radius: 12px 12px 0 12px;
+      text-align: right;
+    }
+
+    .user strong {
+      color: #1900ff;
+      display: block;
+    }
+
+    .user span {
+      color: #1900ff;
+    }
+
+    /* NEXA message on left */
+    .nexa {
+      margin-right: auto;
+      background: #ffe3e3;
+      border-radius: 12px 12px 12px 0;
+      text-align: left;
+    }
+
+    .nexa strong {
+      color: #fc0101;
+      display: block;
+    }
+
+    .nexa span {
+      color: #fc0101;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      color: #000;
+      background: #fff;
+    }
+
+    input[type="text"]:focus {
+      border-color: #2701fc;
+      box-shadow: 0 0 8px rgba(39,1,252,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-slideshow">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2020-01/ADMIN%20-%202.jpg" alt="Admin Block">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2020-01/NEW%20ARCH.jpg" alt="New Architecture">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2020-01/DJI_0221.jpg" alt="Drone Campus View">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2022-09/IMG_0890.JPG" alt="New Library">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2020-09/11_0.jpg" alt="New Admin Block">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2020-01/DSC_4916.jpg" alt="girls mess">
+    <img src="https://www.sathyabama.ac.in/sites/default/files/2020-01/IMG_8296-min.JPG" alt="New Hostel">
+  </div>
+
+  <div id="chatbox">
+    <div id="bot-icon">
+      <img src="https://play-lh.googleusercontent.com/MFS-MizCjnkA9lOwhJuccQe6eY9V2vEmSOH9z4CSnxC4cUYD20HgjSw2ZLbDhMuOOcw" alt="Bot Icon" referrerpolicy="no-referrer">
+    </div>
+    <div id="messages"></div>
+    <input type="text" id="userInput" placeholder="Ask me anything..." />
+  </div>
+
+  <script>
+  const input = document.getElementById('userInput');
+  const messages = document.getElementById('messages');
+
+  // Helper function: format response with line breaks
+  function formatResponse(text) {
+    // Replace \n with <br> so each line is displayed properly
+    return text.replace(/\n/g, "<br>");
+  }
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      // Show user message
+      messages.innerHTML += `
+        <div class="msg user">
+          <strong>USER:</strong> <span>${msg}</span>
+        </div>`;
+      messages.scrollTop = messages.scrollHeight;
+
+      // Fetch backend response
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      })
+      .then(res => res.json())
+      .then(data => {
+        messages.innerHTML += `
+          <div class="msg nexa">
+            <strong>NEXA:</strong> <span>${formatResponse(data.response)}</span>
+          </div>`;
+        messages.scrollTop = messages.scrollHeight;
+      })
+      .catch(() => {
+        messages.innerHTML += `
+          <div class="msg nexa">
+            <strong>NEXA:</strong> <span>⚠️ Something went wrong.</span>
+          </div>`;
+        messages.scrollTop = messages.scrollHeight;
+      });
+
+      input.value = '';
+    }
+  });
+</script>
+
+</body>
+</html>
