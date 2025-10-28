@@ -1057,20 +1057,19 @@ def log_conversation(user_input, bot_response):
 def get_gemini_response(user_input):
     """Ask Gemini with full chat history for context memory."""
     global chat_history
-    try:
+     try:
         model = genai.GenerativeModel("gemini-1.5-flash-latest")
-        
-        # add user input to history
         chat_history.append({"role": "user", "parts": [user_input]})
 
-response = model.generate_content(
-    contents=chat_history,
-    generation_config={
-        "temperature": 0.7,
-        "top_p": 0.9,
-        "max_output_tokens": 512,
-    }
-)
+        response = model.generate_content(
+            contents=chat_history,
+            generation_config={
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_output_tokens": 512,
+            }
+        )
+
 
 
         bot_reply = response.text.strip() if response and response.text else "I couldn’t generate a response."
