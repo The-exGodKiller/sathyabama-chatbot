@@ -6,7 +6,7 @@ import google.generativeai as genai
 # ==============================
 # CONFIGURATION
 # ==============================
-GEMINI_API_KEY = "AIzaSyAV0BgtiDTbOOZVffv4uK6DyvvzUhSn2Ko"  # Get from https://aistudio.google.com/
+GEMINI_API_KEY = "AIzaSyBPO7BGFtM_Xlv8OIpGxNd5jd-BqhoXjnU"  # Get from https://aistudio.google.com/
 genai.configure(api_key=GEMINI_API_KEY)
 LOG_FILE = "chat_log.json"
 
