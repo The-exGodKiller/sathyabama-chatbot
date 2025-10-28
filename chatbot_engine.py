@@ -1058,7 +1058,7 @@ def get_gemini_response(user_input):
     """Ask Gemini with full chat history for context memory."""
     global chat_history
      try:
-        model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        model = genai.GenerativeModel("models/chat-bison-001")
         chat_history.append({"role": "user", "parts": [user_input]})
 
         response = model.generate_content(
