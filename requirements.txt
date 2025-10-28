@@ -1,6 +1,20 @@
-flask
+# Upgrade pip automatically on Render
+pip>=25.3
+
+# Flask backend
+Flask==2.3.5
+
+# Google Gemini AI
 google-generativeai>=0.8.0
-nltk
-requests
-gunicorn
-packaging
+
+# Natural Language Toolkit
+nltk==3.9.1
+
+# HTTP requests
+requests==2.32.0
+
+# Gunicorn for production server
+gunicorn==21.2.0
+
+# Required by google-generativeai
+packaging==23.1
