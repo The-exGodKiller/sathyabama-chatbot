@@ -6,14 +6,36 @@ import google.generativeai as genai
 # ==============================
 # CONFIGURATION
 # ==============================
-GEMINI_API_KEY = "AIzaSyBPO7BGFtM_Xlv8OIpGxNd5jd-BqhoXjnU"  # Get from https://aistudio.google.com/
-genai.configure(api_key=GEMINI_API_KEY)
+# 🛑 CRITICAL FIX 1: REMOVED HARDCODED API KEY. 
+# The SDK will now automatically look for the GEMINI_API_KEY environment variable.
+# You MUST set this variable in your environment or on your deployment platform (like Render).
+try:
+    # This will look for the key in the environment variable GEMINI_API_KEY
+    genai.configure() 
+except Exception as e:
+    print(f"WARNING: Gemini configuration failed. Is GEMINI_API_KEY set? Error: {e}")
+    
 LOG_FILE = "chat_log.json"
 
-chat_history = []
+# 🛑 CRITICAL FIX 2: Initialize GenerativeModel and start_chat()
+# Use a modern, multi-turn chat model (like gemini-2.5-flash) 
+# and let the SDK manage the history (chat_session).
+model_name = "gemini-2.5-flash"
+chat_session = None # Initialize to None
+
+try:
+    model = genai.GenerativeModel(model_name)
+    # Start a chat session - this is what makes the bot remember previous messages.
+    chat_session = model.start_chat(history=[])
+    print(f"Gemini model '{model_name}' configured successfully.")
+except Exception as e:
+    print(f"ERROR: Could not configure Gemini Model: {e}")
+
+
 # ==============================
 # MASSIVE STATIC FAQ DATA
 # ==============================
+# Your FAQ data remains here (truncated for display)
 faq_data = {
     # --- Greetings ---
     "hod of mca": "👨‍🎓 The Head of the Department (MCA) is **Dr. R. AROUL CANESSANE, M.E., Ph.D.**",
@@ -1043,48 +1065,50 @@ def log_conversation(user_input, bot_response):
         "bot": bot_response
     }
 
+    # Ensure the log file exists and is initialized
     if not os.path.exists(LOG_FILE):
         with open(LOG_FILE, "w") as f:
             json.dump([], f, indent=4)
 
-    with open(LOG_FILE, "r+") as f:
-        data = json.load(f)
-        data.append(log_entry)
-        f.seek(0)
-        json.dump(data, f, indent=4)
+    try:
+        with open(LOG_FILE, "r+") as f:
+            # Load, append, seek, and dump to keep the file valid
+            data = json.load(f)
+            data.append(log_entry)
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+    except Exception as e:
+        print(f"Error logging conversation: {e}")
 
 
 def get_gemini_response(user_input):
-    """Ask Gemini with full chat history for context memory."""
-    global chat_history
-     try:
-        model = genai.GenerativeModel("models/chat-bison-001")
-        chat_history.append({"role": "user", "parts": [user_input]})
+    """Ask Gemini using the chat session, maintaining context."""
+    global chat_session
+    
+    if chat_session is None:
+        return "Gemini model is not configured. Please check the server's API key and connection."
 
-        response = model.generate_content(
-            contents=chat_history,
+    try:
+        # 🛑 CHAT FIX: send_message automatically uses the history managed by chat_session
+        response = chat_session.send_message(
+            user_input,
             generation_config={
                 "temperature": 0.7,
-                "top_p": 0.9,
                 "max_output_tokens": 512,
             }
         )
 
-
-
         bot_reply = response.text.strip() if response and response.text else "I couldn’t generate a response."
-
-        # add bot reply to history
-        chat_history.append({"role": "model", "parts": [bot_reply]})
-
         return bot_reply
 
     except Exception as e:
-        return f"⚠️ Error fetching Gemini response: {str(e)}"
+        # More robust error handling for API issues
+        return f"⚠️ Error fetching Gemini response. (Is the API Key valid?): {str(e)}"
 
 
 def generate_response(user_input):
-    """Main response generator."""
+    """Main response generator: checks FAQ first, then falls back to Gemini."""
     lower_input = user_input.lower()
 
     # Special: Time/Date
@@ -1103,7 +1127,7 @@ def generate_response(user_input):
 
 
 # ==============================
-# MAIN CHAT LOOP
+# MAIN CHAT LOOP (for local console testing)
 # ==============================
 if __name__ == "__main__":
     print("🤖 Sathyabama University Chatbot (type 'exit' to quit)\n")
@@ -1116,6 +1140,9 @@ if __name__ == "__main__":
 
         bot_out = generate_response(user_inp)
         print("Bot:", bot_out)
+
+        # Log conversation
+        log_conversation(user_inp, bot_out)
 
         # Log conversation
         log_conversation(user_inp, bot_out)
