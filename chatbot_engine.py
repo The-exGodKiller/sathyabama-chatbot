@@ -6,14 +6,22 @@ import google.generativeai as genai
 # ==============================
 # CONFIGURATION
 # ==============================
-GEMINI_API_KEY = "AIzaSyAV0BgtiDTbOOZVffv4uK6DyvvzUhSn2Ko"  # Get from https://aistudio.google.com/
-genai.configure(api_key=GEMINI_API_KEY)
+# Load key from environment (Render must have GEMINI_API_KEY)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 LOG_FILE = "chat_log.json"
 
-chat_history = []
-# ==============================
-# MASSIVE STATIC FAQ DATA
-# ==============================
+# Use valid Gemini model (2025)
+MODEL_NAME = "gemini-2.0-flash"
+
+try:
+    model = genai.GenerativeModel(MODEL_NAME)
+    chat_session = model.start_chat(history=[])
+    print(f"Gemini model '{MODEL_NAME}' configured successfully.")
+except Exception as e:
+    chat_session = None
+    print(f"ERROR: Could not configure Gemini Model: {e}")
+    
 faq_data = {
     # --- Greetings ---
     "hod of mca": "👨‍🎓 The Head of the Department (MCA) is **Dr. R. AROUL CANESSANE, M.E., Ph.D.**",
