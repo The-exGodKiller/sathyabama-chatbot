@@ -11,12 +11,12 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 LOG_FILE = "chat_log.json"
 
-# Use valid Gemini model (2025)
-MODEL_NAME = "gemini-2.0-flash"
+# Use valid Gemini model (based on your list)
+MODEL_NAME = "gemini-2.5-flash"  # 🚀 best for chat
 
 try:
     model = genai.GenerativeModel(MODEL_NAME)
-    chat_session = model.start_chat(history=[])
+    chat_session = model.start_chat(history=[])   # 🔥 Persistent chat memory
     print(f"Gemini model '{MODEL_NAME}' configured successfully.")
 except Exception as e:
     chat_session = None
@@ -1044,7 +1044,6 @@ faq_data = {
 # FUNCTIONS
 # ==============================
 def log_conversation(user_input, bot_response):
-    """Log every conversation to a file."""
     log_entry = {
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "user": user_input,
@@ -1055,69 +1054,70 @@ def log_conversation(user_input, bot_response):
         with open(LOG_FILE, "w") as f:
             json.dump([], f, indent=4)
 
-    with open(LOG_FILE, "r+") as f:
-        data = json.load(f)
-        data.append(log_entry)
-        f.seek(0)
-        json.dump(data, f, indent=4)
-
-
-def get_gemini_response(user_input):
-    """Ask Gemini with full chat history for context memory."""
-    global chat_history
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
-        # add user input to history
-        chat_history.append({"role": "user", "parts": [user_input]})
-
-        # generate with full conversation
-        response = model.generate_content(chat_history)
-
-        bot_reply = response.text.strip() if response and response.text else "I couldn’t generate a response."
-
-        # add bot reply to history
-        chat_history.append({"role": "model", "parts": [bot_reply]})
-
-        return bot_reply
-
+        with open(LOG_FILE, "r+") as f:
+            data = json.load(f)
+            data.append(log_entry)
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
     except Exception as e:
-        return f"⚠️ Error fetching Gemini response: {str(e)}"
+        print(f"❌ Error logging conversation: {e}")
 
+# ==============================
+# GEMINI RESPONSE (FIXED + NO CRASH)
+# ==============================
+def get_gemini_response(user_input):
+    global chat_session
 
+    if chat_session is None:
+        return "⚠️ AI engine offline. Please try again later."
+
+    try:
+        response = chat_session.send_message(
+            user_input,
+            generation_config={
+                "temperature": 0.7,
+                "max_output_tokens": 500
+            }
+        )
+        return response.text.strip()
+    except Exception as e:
+        print("❌ Gemini Error:", e)
+        return "⚠️ I'm having trouble reaching my AI brain right now."
+
+# ==============================
+# MAIN RESPONSE GENERATOR
+# ==============================
 def generate_response(user_input):
-    """Main response generator."""
-    lower_input = user_input.lower()
+    user_text = user_input.lower()
 
-    # Special: Time/Date
-    if "time" in lower_input:
-        return f"⏰ The current time is {datetime.datetime.now().strftime('%H:%M:%S')}."
-    if "date" in lower_input:
-        return f"📅 Today's date is {datetime.datetime.now().strftime('%Y-%m-%d')}."
+    # Time & Date
+    if "time" in user_text:
+        return f"⏰ Current time: {datetime.datetime.now().strftime('%H:%M:%S')}."
+    if "date" in user_text:
+        return f"📅 Today's date: {datetime.datetime.now().strftime('%Y-%m-%d')}."
 
-    # Check static dictionary
+    # FAQ matching
     for key in faq_data:
-        if key in lower_input:
+        if key in user_text:
             return faq_data[key]
 
-    # Gemini fallback
+    # AI fallback
     return get_gemini_response(user_input)
 
-
 # ==============================
-# MAIN CHAT LOOP
+# CONSOLE TEST (OPTIONAL LOCAL USE)
 # ==============================
 if __name__ == "__main__":
-    print("🤖 Sathyabama University Chatbot (type 'exit' to quit)\n")
+    print("🤖 Sathyabama Chatbot • Type 'exit' to quit\n")
 
     while True:
         user_inp = input("You: ").strip()
         if user_inp.lower() in ["exit", "quit"]:
-            print("Bot: Goodbye! 👋")
+            print("👋 Bye!")
             break
 
         bot_out = generate_response(user_inp)
         print("Bot:", bot_out)
-
-        # Log conversation
         log_conversation(user_inp, bot_out)
