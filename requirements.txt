@@ -1,5 +1,6 @@
 flask
-nltk
-requests
-python-dotenv
+flask-cors
 google-generativeai
+python-dotenv
+gunicorn
+nltk
