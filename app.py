@@ -9,13 +9,13 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json.get("message", "")
+    data = request.json
+    user_input = data.get("message", "").strip()
     response = generate_response(user_input)
     log_conversation(user_input, response)
     return jsonify({"response": response})
 
 if __name__ == "__main__":
-    # Important: allow Render to bind to its provided host/port
     import os
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port)
